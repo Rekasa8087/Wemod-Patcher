@@ -17,11 +17,19 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: 构建原生依赖 asar-fuses-bypass
+        run: |
+          cd tools/asar-fuses-bypass
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+          # 创建对应目录并复制生成的dll
+          if (!(Test-Path cmake-build-release)) { New-Item -ItemType Directory -Path cmake-build-release }
+          Copy-Item build/Release/version.dll cmake-build-release/version.dll
+
       - name: 还原依赖
         run: dotnet restore Wemod-Patcher.sln
 
       - name: 编译生成可执行文件
-        # 改为只编译主项目文件，支持 -o 指定输出目录
         run: dotnet publish WeModPatcher/WeModPatcher.csproj -c Release --self-contained true -r win-x64 -o ./build_output
 
       - name: 上传构建产物
