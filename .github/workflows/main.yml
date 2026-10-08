@@ -1,1 +1,30 @@
+name: Build executable
 
+on:
+  workflow_dispatch:  # 开启手动触发，添加后就会出现Run workflow按钮
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装.NET环境
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: 还原依赖
+        run: dotnet restore Wemod-Patcher.sln
+
+      - name: 编译生成可执行文件
+        run: dotnet publish Wemod-Patcher.sln -c Release --self-contained true -r win-x64 -o ./build_output
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: WandEnhancer
+          path: ./build_output/
